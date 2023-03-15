@@ -21,7 +21,7 @@ type Customer struct {
 	Contacted bool   `json:"contacted"`
 }
 
-// Hard coded Maps of customers
+// Hard coded Map of customers
 var DATA = map[string]Customer{
 	"61b80805-20bb-4a73-a8e0-ef3f413a9e6b": {
 		ID:        "61b80805-20bb-4a73-a8e0-ef3f413a9e6b",
@@ -34,7 +34,7 @@ var DATA = map[string]Customer{
 	"800d5ea0-5914-495b-9138-b9548d38dfeb": {
 		ID:        "800d5ea0-5914-495b-9138-b9548d38dfeb",
 		Name:      "Rafael Nunes",
-		Role:      "Director",
+		Role:      "Sales Manager",
 		Email:     "rafa.nunes@omano.ao",
 		Phone:     "00244912325423",
 		Contacted: true,
@@ -42,7 +42,7 @@ var DATA = map[string]Customer{
 	"ae331cad-6b03-4640-bebf-aaa43a1f3b8f": {
 		ID:        "ae331cad-6b03-4640-bebf-aaa43a1f3b8f",
 		Name:      "Irene Nunes",
-		Role:      "Directora",
+		Role:      "Manager",
 		Email:     "irene.nunes@omano.ao",
 		Phone:     "00244934325423",
 		Contacted: true,
@@ -53,6 +53,7 @@ var DATA = map[string]Customer{
 func getCustomers(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
+
 	if len(DATA) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(nil)
@@ -87,7 +88,7 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 func addCustomer(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
-	id := uuid.New().String() //id := newEntry.ID
+	id := uuid.New().String()
 
 	if _, exist := DATA[id]; exist {
 		w.WriteHeader(http.StatusConflict)
@@ -95,15 +96,18 @@ func addCustomer(w http.ResponseWriter, r *http.Request) {
 	} else {
 		var newEntry Customer
 		reqBody, _ := ioutil.ReadAll(r.Body)
-		json.Unmarshal(reqBody, &newEntry)
+		err := json.Unmarshal(reqBody, &newEntry)
 
-		newEntry.ID = id
-		DATA[id] = newEntry
-
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(newEntry)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(nil)
+		} else {
+			newEntry.ID = id
+			DATA[id] = newEntry
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(newEntry)
+		}
 	}
-
 }
 
 // Update customer data
@@ -115,9 +119,18 @@ func updateCustomer(w http.ResponseWriter, r *http.Request) {
 	if _, exits := DATA[id]; exits {
 		var toUpdate Customer
 		reqBody, _ := ioutil.ReadAll(r.Body)
-		json.Unmarshal(reqBody, &toUpdate)
-		DATA[id] = toUpdate
-		w.WriteHeader(http.StatusOK)
+		err := json.Unmarshal(reqBody, &toUpdate)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(nil)
+		} else {
+			toUpdate.ID = id
+			DATA[id] = toUpdate
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(toUpdate)
+		}
+
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(nil)
