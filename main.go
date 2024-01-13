@@ -172,6 +172,6 @@ func main() {
 	router.HandleFunc("/customers/{id}", deleteCustomer).Methods("DELETE")
 	router.HandleFunc("/customers/{id}", updateCustomer).Methods("PUT")
 
-	fmt.Println("Server running on port 7000 ...")
-	log.Fatal(http.ListenAndServe(":7000", router))
+	fmt.Println("Server running on port 8080 ...")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
